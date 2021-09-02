@@ -17,7 +17,7 @@ function getListBGColor(s: number): string {
 export default function HistoryRefining(): JSX.Element {
     const { clearRefining, refining, removeLastRefining } = useHomeContext()
 
-    return <div className="relative flex-grow flex flex-col gap-2">
+    return <div className="flex-grow flex flex-col gap-2">
         <div className="flex justify-between py-2">
             <button className="text-primary" onClick={removeLastRefining}>
                 Remove one
