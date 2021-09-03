@@ -2,8 +2,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 export enum REFINING_TYPE {
     UNKNOWN,
-    FAIL,
     GONE,
+    FAIL,
     SUCCESS
 }
 
