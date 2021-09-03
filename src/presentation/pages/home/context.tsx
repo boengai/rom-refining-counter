@@ -1,14 +1,10 @@
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import { Refining, REFINING_TYPE } from "domain/entities"
+import { createContext, ReactNode, useContext, useMemo, useState } from "react"
 
 const STORAGE_ITEM_REFINING_KEY = 'refining_history'
 
-export interface IRefining {
-    time: number
-    value: number
-}
-
 interface IHomeContextState {
-    refining: Array<IRefining>
+    refining: Array<Refining>
 }
 
 const initialContextState: IHomeContextState = {
@@ -16,18 +12,18 @@ const initialContextState: IHomeContextState = {
 }
 
 interface IHomeContext extends IHomeContextState {
-    addRefining: (v: number) => void
+    addRefining: (v: REFINING_TYPE) => void
     clearRefining: () => void
     handleState: (s: Partial<IHomeContextState>) => void
     removeLastRefining: () => void
 }
 
-const HomeContext = createContext<IHomeContext | null>(null);
+const HomeContext = createContext<IHomeContext | null>(null)
 
 function useHomeContext(): IHomeContext {
     const context = useContext(HomeContext)
     if (!context) {
-        throw new Error('HomeContext is undefined');
+        throw new Error('HomeContext is undefined')
     }
 
     return context
@@ -38,7 +34,7 @@ export function HomeContextProvider({ children }: { children: ReactNode }): JSX.
     const handleContextState = (s: Partial<IHomeContextState>): void => {
         setContextState(prev => ({ ...prev, ...s }))
     }
-    const handleRefiningChange = (v: Array<IRefining>) => {
+    const handleRefiningChange = (v: Array<Refining>) => {
         handleContextState({ refining: v })
         localStorage.setItem(STORAGE_ITEM_REFINING_KEY, JSON.stringify(v))
     }
@@ -46,7 +42,7 @@ export function HomeContextProvider({ children }: { children: ReactNode }): JSX.
     useMemo(() => {
         const historyJSON = localStorage.getItem(STORAGE_ITEM_REFINING_KEY)
         if (historyJSON) {
-            const history: Array<IRefining> = JSON.parse(historyJSON)
+            const history: Array<Refining> = JSON.parse(historyJSON)
             handleContextState({ refining: history })
         }
 
@@ -54,17 +50,17 @@ export function HomeContextProvider({ children }: { children: ReactNode }): JSX.
 
     return <HomeContext.Provider value={{
         ...contextState,
-        addRefining: useCallback((v: number) => {
-            handleRefiningChange([...contextState.refining, { time: window.performance.now(), value: v }])
-        }, [contextState.refining]),
-        clearRefining: useCallback(() => {
+        addRefining: (v: REFINING_TYPE) => {
+            handleRefiningChange([...contextState.refining, Refining.fromType(v)])
+        },
+        clearRefining: () => {
             handleRefiningChange([])
-        }, [contextState.refining]),
-        removeLastRefining: useCallback(() => {
+        },
+        removeLastRefining: () => {
             const cur = [...contextState.refining]
             cur.pop()
             handleRefiningChange(cur)
-        }, [contextState.refining]),
+        },
         handleState: handleContextState
     }}>
         {children}
