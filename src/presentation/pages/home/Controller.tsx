@@ -6,11 +6,11 @@ export default function Controller(): JSX.Element {
 
     return <div className="flex-none">
         <div className="flex justify-between px-4 py-2">
-            <button className="text-primary" onClick={removeLastRefining}>
-                Remove one
-            </button>
             <button className="text-primary" onClick={clearRefining}>
                 Clear all
+            </button>
+            <button className="text-primary" onClick={removeLastRefining}>
+                Remove one
             </button>
         </div>
     </div>
