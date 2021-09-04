@@ -32,7 +32,7 @@ enum PoringListSize {
     sm = 'w-5 h-5'
 }
 
-export function PoringList({ data, pingLast = false, size = 'default' }: { data: Array<Refining>, pingLast?: boolean, size?: 'default' | 'sm' }): JSX.Element {
+export function PoringList({ data, size = 'default' }: { data: Array<Refining>, size?: 'default' | 'sm' }): JSX.Element {
     if (data.length === 0) {
         return <></>
     }
@@ -45,7 +45,6 @@ export function PoringList({ data, pingLast = false, size = 'default' }: { data:
                 inline-block overflow-hidden p-1 -mr-2 self-center rounded-full border-2
                 ${PoringListSize[size]}
                 ${getListBGColor(r.value)}
-                ${pingLast && i === data.length - 1 && 'animate-shake'}
             `}
             >
                 <div className="flex h-full w-full items-center">

@@ -1,18 +1,17 @@
-import { Refining, REFINING_TYPE } from "domain/entities"
-import { PoringList } from "presentation/components/Poring"
+import { Refining, Refinings, REFINING_TYPE } from "domain/entities"
+import { getListBGColor, Poring, PoringList } from "presentation/components"
 import useHomeContext from "./context"
 
 function SummaryRefining({ found, pattern }: { found: number, pattern: string }): JSX.Element {
 
     if (found === 0) {
-        return <div className="w-full" />
+        return <div className="w-full flex justify-center items-center p-1" style={{ minHeight: 58 }}>-</div>
     }
 
     return <div className={`
-            w-full p-1 flex flex-col items-center rounded border-4
-            ${pattern.substr(-1) === `${REFINING_TYPE.SUCCESS}` ? 'border-primary' : 'border-transparent'}
+            w-full p-1 flex flex-col items-center rounded
         `}>
-        <PoringList data={Refining.fromString(pattern)} pingLast={true} size="sm" />
+        <PoringList data={Refinings.fromString(pattern)} size="sm" />
         <p>
             <strong>{found} </strong>
             <span>{found > 1 ? 'times' : 'time'}</span>
@@ -21,10 +20,14 @@ function SummaryRefining({ found, pattern }: { found: number, pattern: string })
 }
 
 function SummaryControl(): JSX.Element {
-    const { refining } = useHomeContext()
+    const { refining, predicted } = useHomeContext()
 
-    if (!refining || refining.length < 30) {
-        return <p className="text-center italic">Waiting for your information</p>
+    if (!refining || refining.length === 0) {
+        return <p className="w-full text-center italic">Waiting for your information</p>
+    }
+
+    if (refining.length < 30) {
+        return <p className="text-center italic">Need more data</p>
     }
 
     const refiningTest = refining.map((r: Refining) => r.value).join('')
@@ -41,23 +44,32 @@ function SummaryControl(): JSX.Element {
         refiningTypes[`${r}`] = founds?.length ?? 0
     })
 
-    if (Object.keys(refiningTypes).filter((r: string) => refiningTypes[`${r}`] > 0).length > 0) {
-        return <>
-            <p className="text-center italic font-bold">If there are some patterns literally, it can be:</p>
-            <div className="w-full flex gap4">
-                {Object.keys(refiningTypes).map((r: string) => (
-                    <SummaryRefining found={refiningTypes[`${r}`]} key={r} pattern={`${last3Refining}${r}`} />
-                ))}
-            </div>
-        </>
-    }
-
-    return <p className="text-center italic">Need more data</p>
+    return <>
+        <div className="w-full flex gap4">
+            {Object.keys(refiningTypes).map((r: string) => (
+                <SummaryRefining found={refiningTypes[`${r}`]} key={r} pattern={`${last3Refining}${r}`} />
+            ))}
+        </div>
+        <p className="flex justify-center items-center font-bold">
+            {predicted === REFINING_TYPE.UNKNOWN && <span>NN: <i>couldn't predict</i></span>}
+            {predicted !== REFINING_TYPE.UNKNOWN && (
+                <>
+                    <span>NN: <i>the prediction result is</i></span>
+                    <span className={`
+                        flex flex-col justify-center items-center overflow-hidden p-1 rounded-full border-2 border-white w-7 h-7 ml-2 animate-shake
+                        ${getListBGColor(predicted)}
+                    `}>
+                        <Poring type={predicted} />
+                    </span>
+                </>
+            )}
+        </p>
+    </>
 }
 
 export default function Summary(): JSX.Element {
-    return <div className="flex-none border-b">
-        <div className="flex flex-col px-4 py-2">
+    return <div className="flex-none border-b" style={{ minHeight: 111 }}>
+        <div className="h-full flex flex-col justify-center items-center px-4 py-2">
             <SummaryControl />
         </div>
     </div>

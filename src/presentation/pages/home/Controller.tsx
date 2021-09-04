@@ -1,4 +1,3 @@
-import { PoringList } from "presentation/components/Poring"
 import useHomeContext from "./context"
 
 export default function Controller(): JSX.Element {
