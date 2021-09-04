@@ -1,3 +1,7 @@
+# rom-refining-counter
+
+Just trying to use [brain.js](https://github.com/BrainJS/brain.js) So you can access that stupid predictor [here](https://rom-refining-counter.herokuapp.com/).
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
