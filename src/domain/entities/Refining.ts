@@ -1,3 +1,4 @@
+import { INeuralNetworkTrainingData, IRNNTrainingData, NeuralNetworkInput, RNNTrainingValue } from 'brain.js'
 import { v4 as uuidv4 } from 'uuid'
 
 export enum REFINING_TYPE {
@@ -41,11 +42,15 @@ export default class Refining {
         Object.assign(this, params)
     }
 
-    isEqual(_e: REFINING_TYPE): boolean {
+    is(_e: REFINING_TYPE): boolean {
         return this.value === _e
     }
 
-    toPrediction(): string {
+    isRefinedSuccess(): number {
+        return this.is(REFINING_TYPE.SUCCESS) ? 1 : 0
+    }
+
+    toLSTMPrediction(): string {
         switch (this.value) {
             case REFINING_TYPE.GONE:
                 return '100'
@@ -58,16 +63,24 @@ export default class Refining {
         }
     }
 
+    toNNPrediction(): number {
+        switch (this.value) {
+            case REFINING_TYPE.GONE:
+                return 0
+            case REFINING_TYPE.FAIL:
+                return 0.5
+            case REFINING_TYPE.SUCCESS:
+                return 1
+            default:
+                return 0
+        }
+    }
+
     static fromType(_v: REFINING_TYPE): Refining {
         return new Refining({ key: uuidv4(), value: _v })
     }
 }
 
-
-interface IRefineTrainingSet {
-    input: Array<string>
-    output: string
-}
 export class Refinings {
     static fromJSON(_j: Array<any>): Array<Refining> {
         return _j.map((r: any) => new Refining({ key: r['key'], value: r['value'] }))
@@ -78,30 +91,72 @@ export class Refinings {
         return ss.map((r: string, i: number) => new Refining({ key: `${uuidv4()}-${i}`, value: parseRefiningType(r) }))
     }
 
-    static getLast4(_d: Array<Refining>): Array<Refining> {
-        if (_d.length < 4) return []
+    static getLast(_d: Array<Refining>, _s: number): Array<Refining> {
+        if (_d.length < _s) return []
 
         const dataLength = _d.length
-        return [
-            _d[dataLength - 4],
-            _d[dataLength - 3],
-            _d[dataLength - 2],
-            _d[dataLength - 1]
-        ]
+
+        const data: Array<Refining> = []
+        for (let ii = _s; ii > 0; ii--) {
+            data.push(_d[dataLength - ii])
+        }
+
+        return data
     }
 
-    static toTrainingSet(_d: Array<Refining>): Array<IRefineTrainingSet> {
-        return _d.reduce((acc: Array<IRefineTrainingSet>, cur: Refining, i: number) => {
-            if (!_d[i + 4]) {
+    static toLSTMTrainingSet(_d: Array<Refining>, _w: number, _l?: number): Array<IRNNTrainingData> {
+        if (_w <= 0) return []
+
+        const trainingSet = _d.reduce((acc: Array<IRNNTrainingData>, cur: Refining, i: number) => {
+            if (!_d[i + _w]) {
                 return acc
             }
 
+            let input: RNNTrainingValue = ''
+            for (let ii = 0; ii < _w; ii++) {
+                input += _d[i + ii].toLSTMPrediction()
+            }
+
             acc.push({
-                input: [_d[i].toPrediction(), _d[i + 1].toPrediction(), _d[i + 2].toPrediction(), _d[i + 3].toPrediction()],
-                output: _d[i + 4].toPrediction()
+                input: input,
+                output: _d[i + _w].toLSTMPrediction()
             })
 
             return acc
         }, [])
+
+        if (_l) {
+            return trainingSet.filter((_, i: number) => i >= trainingSet.length - _l)
+        }
+
+        return trainingSet
+    }
+
+    static toNNTrainingSet(_d: Array<Refining>, _w: number, _l?: number): Array<INeuralNetworkTrainingData> {
+        if (_w <= 0) return []
+
+        const trainingSet = _d.reduce((acc: Array<INeuralNetworkTrainingData>, cur: Refining, i: number) => {
+            if (!_d[i + _w]) {
+                return acc
+            }
+
+            const input: NeuralNetworkInput = []
+            for (let ii = 0; ii < _w; ii++) {
+                input.push(_d[i + ii].toNNPrediction())
+            }
+
+            acc.push({
+                input: input,
+                output: [_d[i + _w].toNNPrediction()]
+            })
+
+            return acc
+        }, [])
+
+        if (_l) {
+            return trainingSet.filter((_, i: number) => i >= trainingSet.length - _l)
+        }
+
+        return trainingSet
     }
 }

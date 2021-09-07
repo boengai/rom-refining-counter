@@ -1,9 +1,9 @@
 import { Button, Poring } from "presentation/components"
 import { REFINING_TYPE } from "domain/entities"
 import useHomeContext from "./context"
+import { memo } from "react"
 
-
-export default function ButtonBar(): JSX.Element {
+function ButtonBar(): JSX.Element {
     const { addRefining } = useHomeContext()
 
     return <footer className="flex-none bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg w-full">
@@ -14,3 +14,7 @@ export default function ButtonBar(): JSX.Element {
         </div>
     </footer>
 }
+
+const MemoizeButtonBar = memo(ButtonBar)
+
+export default MemoizeButtonBar

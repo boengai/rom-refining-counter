@@ -2,6 +2,7 @@ import PoringGone from 'assets/images/poring_gone.png'
 import PoringGood from 'assets/images/poring_good.png'
 import PoringHit from 'assets/images/poring_hit.png'
 import { Refining, REFINING_TYPE } from 'domain/entities'
+import { memo } from 'react'
 
 export function getListBGColor(s: REFINING_TYPE): string {
     switch (s) {
@@ -16,23 +17,12 @@ export function getListBGColor(s: REFINING_TYPE): string {
     }
 }
 
-export default function Poring({ type }: { type?: REFINING_TYPE }): JSX.Element {
-    switch (type) {
-        case REFINING_TYPE.FAIL:
-            return <img src={PoringHit} className="inline-block" alt="fail" />
-        case REFINING_TYPE.GONE:
-            return <img src={PoringGone} className="inline-block" alt="worst" />
-        default:
-            return <img src={PoringGood} className="inline-block" alt="good" />
-    }
-}
-
 enum PoringListSize {
     default = 'w-8 h-8',
     sm = 'w-5 h-5'
 }
 
-export function PoringList({ data, size = 'default' }: { data: Array<Refining>, size?: 'default' | 'sm' }): JSX.Element {
+function UnMemoizePoringList({ data, size = 'default' }: { data: Array<Refining>, size?: 'default' | 'sm' }): JSX.Element {
     if (data.length === 0) {
         return <></>
     }
@@ -54,3 +44,20 @@ export function PoringList({ data, size = 'default' }: { data: Array<Refining>, 
         )}
     </ul>
 }
+
+export const PoringList = memo(UnMemoizePoringList)
+
+function Poring({ type }: { type?: REFINING_TYPE }): JSX.Element {
+    switch (type) {
+        case REFINING_TYPE.FAIL:
+            return <img src={PoringHit} className="inline-block" alt="fail" />
+        case REFINING_TYPE.GONE:
+            return <img src={PoringGone} className="inline-block" alt="worst" />
+        default:
+            return <img src={PoringGood} className="inline-block" alt="good" />
+    }
+}
+
+const MemoizePoring = memo(Poring)
+
+export default MemoizePoring

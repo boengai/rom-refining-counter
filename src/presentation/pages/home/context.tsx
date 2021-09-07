@@ -1,5 +1,5 @@
 import { Refining, Refinings, REFINING_TYPE } from "domain/entities"
-import { useRefinePrediction } from "domain/hooks"
+import { usePredictionRefineLSTM } from "domain/hooks"
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react"
 
 const STORAGE_ITEM_REFINING_KEY = 'refining_history'
@@ -18,6 +18,7 @@ interface IHomeContext extends IHomeContextState {
     handleState: (s: Partial<IHomeContextState>) => void
     predicted: REFINING_TYPE
     removeLastRefining: () => void
+    training: boolean
 }
 
 const HomeContext = createContext<IHomeContext | null>(null)
@@ -33,7 +34,7 @@ function useHomeContext(): IHomeContext {
 
 export function HomeContextProvider({ children }: { children: ReactNode }): JSX.Element {
     const [contextState, setContextState] = useState<IHomeContextState>(initialContextState)
-    const { predicted, run, train } = useRefinePrediction()
+    const { predicted, run, train, training } = usePredictionRefineLSTM()
 
     const handleContextState = (s: Partial<IHomeContextState>): void => {
         setContextState(prev => ({ ...prev, ...s }))
@@ -50,16 +51,14 @@ export function HomeContextProvider({ children }: { children: ReactNode }): JSX.
             handleContextState({ refining: history })
             train(history)
         }
-
-    }, [train])
+    }, [])
 
     return <HomeContext.Provider value={{
         ...contextState,
-        predicted,
         addRefining: useCallback((v: REFINING_TYPE) => {
             const refined = Refining.fromType(v)
             handleRefiningChange([...contextState.refining, refined])
-            if (refined.isEqual(predicted)) {
+            if (refined.is(predicted)) {
                 run(contextState.refining)
                 return
             }
@@ -69,13 +68,15 @@ export function HomeContextProvider({ children }: { children: ReactNode }): JSX.
         clearRefining: useCallback(() => {
             handleRefiningChange([])
         }, [handleRefiningChange]),
+        handleState: handleContextState,
+        predicted,
         removeLastRefining: useCallback(() => {
             const cur = [...contextState.refining]
             cur.pop()
             handleRefiningChange(cur)
             run(cur)
         }, [contextState.refining, handleRefiningChange, run]),
-        handleState: handleContextState
+        training,
     }}>
         {children}
     </HomeContext.Provider>
