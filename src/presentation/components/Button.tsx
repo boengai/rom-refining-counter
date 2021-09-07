@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes } from "react"
+import { ButtonHTMLAttributes, memo } from "react"
 
 enum ButtonSize {
     default = "px-6 py-2",
@@ -18,7 +18,7 @@ interface IButton extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> 
     size?: 'default' | 'lg'
     type?: 'default' | 'danger' | 'primary' | 'warning'
 }
-export default function Button({ block = false, children, htmlType = 'button', size = 'default', type = 'default', ...rest }: IButton): JSX.Element {
+function Button({ block = false, children, htmlType = 'button', size = 'default', type = 'default', ...rest }: IButton): JSX.Element {
     return <button
         className={`
             transition-all text-center shadow rounded border overflow-hidden
@@ -32,3 +32,7 @@ export default function Button({ block = false, children, htmlType = 'button', s
         {children}
     </button>
 }
+
+const MemoizeButton = memo(Button)
+
+export default MemoizeButton

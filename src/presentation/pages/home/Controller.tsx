@@ -1,6 +1,7 @@
+import { memo } from "react"
 import useHomeContext from "./context"
 
-export default function Controller(): JSX.Element {
+function Controller(): JSX.Element {
     const { clearRefining, removeLastRefining } = useHomeContext()
 
     return <div className="flex-none">
@@ -14,3 +15,7 @@ export default function Controller(): JSX.Element {
         </div>
     </div>
 }
+
+const MemoizeController = memo(Controller)
+
+export default MemoizeController
