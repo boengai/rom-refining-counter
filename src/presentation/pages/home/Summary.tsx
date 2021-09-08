@@ -60,7 +60,11 @@ function SummaryPredictionWrapper({ children }: { children: ReactNode }): JSX.El
 }
 
 function SummaryPrediction(): JSX.Element {
-    const { predicted, training } = useHomeContext()
+    const { predicted, refining, training } = useHomeContext()
+
+    if (refining.length < 30) {
+        return <></>
+    }
 
     if (training) {
         return <SummaryPredictionWrapper><span>NN: <i>Training</i></span></SummaryPredictionWrapper>
